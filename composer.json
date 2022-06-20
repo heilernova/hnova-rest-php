@@ -1,0 +1,15 @@
+{
+    "name": "hnova/rest",
+    "autoload": {
+        "psr-4": {
+            "HNova\\Rest\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "HeilerNova",
+            "homepage":"https://github.com/heilernova"
+        }
+    ],
+    "require": {}
+}
