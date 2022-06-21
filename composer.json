@@ -11,5 +11,11 @@
             "homepage":"https://github.com/heilernova"
         }
     ],
-    "require": {}
+    "scripts": {
+        "nv": "HNova\\Rest\\Scripts\\script::execute",
+        "nv-test": "HNova\\Rest\\Scripts\\script::test"
+    },
+    "require-dev": {
+        "composer/composer": "^2.3"
+    }
 }
