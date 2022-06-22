@@ -21,6 +21,11 @@ class templates
     }
 
     public static function indexApi():string {
-        return "<?php\n\nrequire __DIR__ . '/../vendor/autoload.php';";
+        $content = "<?php\n\n";
+        $content .= "require __DIR__ . '/../vendor/autoload.php';\n\n";
+        $content .= "use HNova\Rest\api;\n\n";
+        $content .= 'api::run();';
+
+        return $content;
     }
 }
