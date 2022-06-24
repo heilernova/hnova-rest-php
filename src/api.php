@@ -13,17 +13,7 @@ namespace HNova\Rest;
 
 class api
 {
-    public static function run():void{
-        $url = $_SERVER['REQUEST_URI'];
-        $path_script = dirname($_SERVER['SCRIPT_NAME']);
-        $uri = substr($url, strlen($path_script));
-        
-        $_ENV['api-rest-req']['method'] = $_SERVER['REQUEST_METHOD'];
-        $_ENV['api-rest-req']['url'] = trim($uri, "/");
-        if (!isset($_ENV['api-rest-routes'])){
-            $_ENV['api-rest-routes'] = [];
-        }
-
+    public static function run():never{
         $res = null;
         try {
             $res = require __DIR__ . "/run.php";
@@ -44,11 +34,27 @@ class api
         exit;
     }
 
+    public static function getConfig():object{
+        return (object)[];
+    }
+
+    public static function setDirFiles(string $dir):void {
+        $_ENV['api-rest-dir-files'] = $dir;
+    }
+
+    public static function getDirFile(string $name):string {
+        return ($_ENV['api-rest-dir-files'] ?? $_ENV['api-rest-dir']) . "/$name";
+    }
+
     public static function use(string $path, string|Route $router){
         $_ENV['api-rest-routes'][$path] = $router;
     }
 
     public static function getRoutes():array{
         return $_ENV['api-rest-routes'];
+    }
+
+    public function getDir(string $path = null):string {
+        return $_ENV['api-rest-dir'] . ($path ? "/$path" : '');
     }
 }

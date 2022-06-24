@@ -5,7 +5,8 @@ namespace HNova\Rest;
 class Router
 {
     private array $routes = [];
-    public function __construct(private string $path = '', array $middlware = [])
+
+    public function __construct(private string $path = '', private array $middlware = [])
     {
         
     }
@@ -29,7 +30,8 @@ class Router
 
         $_ENV['api-rest-routes'][$path_key]['methods'][$method] = [
             'path' => $path,
-            'handlings' => $handlings
+            'handlings' => array_merge($this->middlware, $handlings)
+            // 'handlings' => $handlings
         ];
     }
 
@@ -42,14 +44,14 @@ class Router
     }
 
     public function put($path, array|callable  ...$handlings){
-
+        $this->add('PUT', $path, ...$handlings);
     }
 
     public function delete($path, array|callable ...$handlings){
-
+        $this->add('DELETE', $path, ...$handlings);
     }
 
     public function pacth($path, array|callable ...$handlings){
-
+        $this->add('PACHT', $path, ...$handlings);
     }
 }

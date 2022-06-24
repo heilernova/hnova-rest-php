@@ -1,7 +1,39 @@
 <?php
 
 use HNova\Rest\req;
+use HNova\Rest\res;
 use HNova\Rest\Response;
+
+// Cargamos los ruta del directorio
+
+$dir = "";
+foreach (get_required_files() as $path){
+    if (str_ends_with($path, 'index.api.php')){
+        $_ENV['api-rest-dir'] = dirname($path);
+        break;
+    }
+}
+
+// Load app.json
+
+$path_app_json = $_ENV['api-rest-dir'] . "/app.json";
+
+if (file_exists($path_app_json)){
+    $app_json = json_decode(file_get_contents($path_app_json), true);
+    $_ENV['api-rest-config'] = $app_json; 
+}else{
+    return res::text("Error al cargar app.json")->status(500);
+}
+
+$url = $_SERVER['REQUEST_URI'];
+$path_script = dirname($_SERVER['SCRIPT_NAME']);
+$uri = substr($url, strlen($path_script));
+
+$_ENV['api-rest-req']['method'] = $_SERVER['REQUEST_METHOD'];
+$_ENV['api-rest-req']['url'] = trim($uri, "/");
+if (!isset($_ENV['api-rest-routes'])){
+    $_ENV['api-rest-routes'] = [];
+}
 
 $url = req::getURL();
 
@@ -14,11 +46,23 @@ foreach ($use as $key => $value){
 
         if (is_string($value)){
             $url = substr("/$url/", strlen("$key/"));
+
+
+            $routes_config = $_ENV['api-rest-config']['routesConfig'];
+
+            $route_cofig = $routes_config['/'] ?? null;
+            if (array_key_exists($key, $routes_config)){
+                $route_cofig = $routes_config[$key];
+            }
+
             require $value;
         }
         break;
     }
 }
+
+$_ENV['api-rest-cors'] = $route_cofig['cors'];
+require __DIR__ . '/Funcs/load-cors.php';
 
 // Cargamos las truas
 $route = null;

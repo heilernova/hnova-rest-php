@@ -35,9 +35,27 @@ if (!file_exists($dir)){
     }
 }
 
+// Data app.json
+$json_data = [
+    'name'  => 'My app',
+    'debug' => true,
+    'developers' => [],
+    'databases' => (object)[],
+    'routesConfig' => (object)[
+        '/' => [
+            'cors' => [
+                'origin' => '*',
+                'methods' => '*',
+                'allowedHeaders' => '*'
+            ]
+        ]
+    ]
+];
+
 files::add("www/.htaccess", templates::get_htaccess());
 files::add("www/index.php", templates::indexPublic($dir));
 files::add("$dir/index.api.php", templates::indexApi());
+files::add("$dir/app.json", str_replace('\/','/', json_encode($json_data, 128)));
 files::add("$dir/.gitignore", "/bin/");
 
 files::salve();
