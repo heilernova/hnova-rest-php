@@ -1,5 +1,6 @@
 <?php
 
+use HNova\Rest\HttpFuns;
 use HNova\Rest\req;
 use HNova\Rest\res;
 use HNova\Rest\Response;
@@ -29,8 +30,15 @@ $url = $_SERVER['REQUEST_URI'];
 $path_script = dirname($_SERVER['SCRIPT_NAME']);
 $uri = substr($url, strlen($path_script));
 
+/*****************************************************************************
+ * Cargamos los datos de la req
+ */
 $_ENV['api-rest-req']['method'] = $_SERVER['REQUEST_METHOD'];
 $_ENV['api-rest-req']['url'] = trim($uri, "/");
+$_ENV['api-rest-req']['ip'] = HttpFuns::getIp();
+$_ENV['api-rest-req']['device'] = HttpFuns::getDevice();
+$_ENV['api-rest-req']['platform'] = HttpFuns::getPlatform();
+
 if (!isset($_ENV['api-rest-routes'])){
     $_ENV['api-rest-routes'] = [];
 }
@@ -41,6 +49,10 @@ $url = req::getURL();
 $use = $_ENV['api-rest-routes'];
 $_ENV['api-rest-routes'] = [];
 
+$routes_config = $_ENV['api-rest-config']['routesConfig'];
+
+$route_cofig = $routes_config['/'] ?? null;
+
 foreach ($use as $key => $value){
     if (str_starts_with("/$url/", "$key/")){
 
@@ -48,9 +60,6 @@ foreach ($use as $key => $value){
             $url = substr("/$url/", strlen("$key/"));
 
 
-            $routes_config = $_ENV['api-rest-config']['routesConfig'];
-
-            $route_cofig = $routes_config['/'] ?? null;
             if (array_key_exists($key, $routes_config)){
                 $route_cofig = $routes_config[$key];
             }
@@ -60,17 +69,32 @@ foreach ($use as $key => $value){
         break;
     }
 }
-
+// echo json_encode($routes_config); exit;
 $_ENV['api-rest-cors'] = $route_cofig['cors'];
 require __DIR__ . '/Funcs/load-cors.php';
 
-// Cargamos las truas
+/**************************************************************************************************
+ * Cargamos Rutas
+ */
 $route = null;
 $url = "/" . trim($url, '/') . "/";
 
 foreach ($_ENV['api-rest-routes'] as $key => $value){
     $pattern = "/" . str_replace(':p', '(.+)', str_replace('/', '\/', "$key") ) . "/i";
     if (preg_match($pattern, $url) != false){
+
+        // Caramos los parametros
+        $explode_path = explode('/', $value['path']);
+        $explode_url  = explode('/', $url);
+        $params_url = [];
+        for ($i = 1; $i < count($explode_path); $i++){
+            $item = $explode_path[$i];
+            if (str_starts_with($item, ':')){
+                $params_url[ltrim($item, ':')] = $explode_url[$i] ;
+            }
+        }
+
+        $_ENV['api-rest-req']['params'] = $params_url;
         $route = $value;
         break;
     }

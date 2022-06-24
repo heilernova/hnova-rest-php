@@ -40,7 +40,15 @@ $json_data = [
     'name'  => 'My app',
     'debug' => true,
     'developers' => [],
-    'databases' => (object)[],
+    'databases' => (object)[
+        'test' => [
+            'type' => 'mysql',
+            'hostname' => 'localhost',
+            'username' => 'root',
+            'password' => '',
+            'database' => 'test'
+        ]
+    ],
     'routesConfig' => (object)[
         '/' => [
             'cors' => [
@@ -54,8 +62,10 @@ $json_data = [
 
 files::add("www/.htaccess", templates::get_htaccess());
 files::add("www/index.php", templates::indexPublic($dir));
+files::add("$dir/app.php", templates::app());
 files::add("$dir/index.api.php", templates::indexApi());
 files::add("$dir/app.json", str_replace('\/','/', json_encode($json_data, 128)));
-files::add("$dir/.gitignore", "/bin/");
+files::add("$dir/.gitignore", "/Logs/");
+files::add("$dir/Routes/index.routes.php", templates::routes());
 
 files::salve();

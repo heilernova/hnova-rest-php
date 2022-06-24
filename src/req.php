@@ -28,4 +28,20 @@ class req
     public static function files():array {
         return $_ENV['api-rest-req']['files'] ?? [];
     }
+
+    public static function params($assoc = true):array {
+        return $_ENV['api-rest-req']['params'];
+    }
+
+    public static function device():int{
+        return $_ENV['api-rest-req']['device'];
+    }
+
+    public static function ip():string {
+        return $_ENV['api-rest-req']['ip'];
+    }
+
+    public static function platform():string {
+        return $_ENV['api-rest-req']['platform'];
+    }
 }

@@ -24,8 +24,21 @@ class templates
         $content = "<?php\n\n";
         $content .= "require __DIR__ . '/../vendor/autoload.php';\n\n";
         $content .= "use HNova\Rest\api;\n\n";
+        $content .= "api::use('/', __DIR__ . '/Routes/index.routes.php');\n";
         $content .= 'api::run();';
 
         return $content;
+    }
+
+    public static function app():string {
+        $text = "<?php\n\n";
+        $text .= "namespace App;\n\n";
+        $text .= "class app\n{\n    \n}";
+        return $text;
+    }
+
+    public static function routes():string {
+        return file_get_contents(__DIR__ . "/templates/routes.templates.php");
+        // return $text;
     }
 }
