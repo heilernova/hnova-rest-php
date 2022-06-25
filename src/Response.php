@@ -24,6 +24,7 @@ class Response
     }
 
     public function status(int $status):Response{
+        $this->status = $status;
         return $this;
     }
 
