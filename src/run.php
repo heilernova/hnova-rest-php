@@ -81,7 +81,7 @@ $url = "/" . trim($url, '/') . "/";
 
 foreach ($_ENV['api-rest-routes'] as $key => $value){
     $pattern = "/" . str_replace(':p', '(.+)', str_replace('/', '\/', "$key") ) . "/i";
-    if (preg_match($pattern, $url) != false){
+    if (preg_match($pattern, $url) != false && substr_count($url, '/') == substr_count($key, '/')){
 
         // Caramos los parametros
         $explode_path = explode('/', $value['path']);
