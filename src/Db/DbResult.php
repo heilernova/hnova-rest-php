@@ -11,8 +11,21 @@
  */
 namespace HNova\Rest\Db;
 
+use PDO;
+use PDOStatement;
+
 class DbResult
 {
-    public int $rowCount = 0;
-    public array $rows = [];
+    public function __construct(public PDOStatement $stmt)
+    {
+        
+    }
+
+    public function getRowCount():int{
+        return $this->stmt->rowCount();
+    }
+
+    public function getRows(int $mode = PDO::FETCH_ASSOC, mixed ...$args):array{
+        return $this->stmt->fetchAll($mode, ...$args);
+    }
 }

@@ -43,12 +43,18 @@ class db
                 }
             }
 
+            if ($params){
+                $params = array_map(function($value){
+                    if (is_array($value) || is_object($value)){
+                        return json_encode($value);
+                    }
+                    return $value;
+                }, $params);
+            }
+
             if (self::$stmt->execute($params)){
 
-                $res = new DbResult();
-
-                $res->rows = self::$stmt->fetchAll(PDO::FETCH_ASSOC);
-                $res->rowCount = count($res->rows);
+                $res = new DbResult(self::$stmt);
                 return $res;
             }
         } catch (\Throwable $th) {
