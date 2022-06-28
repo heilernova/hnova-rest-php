@@ -69,7 +69,7 @@ class db
     /********************************************************************************
      * 
      */
-    public static function insert(array $params, string $table){
+    public static function insert(array $params, string $table, string $returning = null){
         $fields = "";
         $values = "";
         foreach ($params as $key => $value){
@@ -81,7 +81,7 @@ class db
 
         $table = self::getChartFormat() . $table . self::getChartFormat();
 
-        return self::execute("INSERT INTO $table($fields) VALUES($values)", $params);
+        return self::execute("INSERT INTO $table($fields) VALUES($values)" . ($returning ? " RETURNING $returning" : ""), $params);
     }
 
     /**
