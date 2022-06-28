@@ -6,10 +6,10 @@
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
- * 
- * https://codigonaranja.com/como-cambiar-el-color-del-texto-en-aplicaciones-de-consola-de-php
  */
 namespace HNova\Rest;
+
+use HNova\Rest\Http\FormDataFile;
 
 class req
 {
@@ -25,12 +25,18 @@ class req
         return $_ENV['api-rest-req']['body'] ?? null;
     }
 
+    /**
+     * @return FormDataFile[]
+     */
     public static function files():array {
         return $_ENV['api-rest-req']['files'] ?? [];
     }
 
-    public static function params($assoc = true):array {
-        return $_ENV['api-rest-req']['params'];
+    /**
+     * @param string[]|object
+     */
+    public static function params(bool $assoc = false):array {
+        return $assoc ? $_ENV['api-rest-req']['params'] : (object)$_ENV['api-rest-req']['params'];
     }
 
     public static function device():int{

@@ -1,12 +1,19 @@
 <?php
-
+/*
+ * This file is part of HNova/api.
+ *
+ * (c) Heiler Nova <https://github.com/heilernova>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+use HNova\Rest\Http\FormDataFile;
 use HNova\Rest\HttpFuns;
 use HNova\Rest\req;
 use HNova\Rest\res;
 use HNova\Rest\Response;
 
 // Cargamos los ruta del directorio
-
 $dir = "";
 foreach (get_required_files() as $path){
     if (str_ends_with($path, 'index.api.php')){
@@ -31,7 +38,7 @@ $path_script = dirname($_SERVER['SCRIPT_NAME']);
 $uri = substr($url, strlen($path_script));
 
 /*****************************************************************************
- * Cargamos los datos de la req
+ * Cargamos los datos de la request
  */
 $_ENV['api-rest-req']['method'] = $_SERVER['REQUEST_METHOD'];
 $_ENV['api-rest-req']['url'] = trim($uri, "/");
@@ -69,7 +76,9 @@ foreach ($use as $key => $value){
         break;
     }
 }
-// echo json_encode($routes_config); exit;
+/***************************************************************
+ * Cargamos los CORS *** Verificar funcionamiento **** 
+ */
 $_ENV['api-rest-cors'] = $route_cofig['cors'];
 require __DIR__ . '/Funcs/load-cors.php';
 
@@ -108,35 +117,45 @@ if ($route){
     if ($content_type){
         $type = explode(';', $content_type)[0];
         switch ($type){
+            # JSON
             case "application/json":
                 $_ENV['api-rest-req']['body'] = json_decode(file_get_contents('php://input'));
                 break;
-
+            
+            # FormData
             case "multipart/form-data":
                 switch (req::getMethod()) {
                     case 'GET':
                         $_ENV['api-rest-req']['body'] = $_GET;
-                        $_ENV['api-rest-req']['files'] = $_FILES;
                         break;
 
                     case 'POST':
                         $_ENV['api-rest-req']['body'] = $_POST;
-                        $_ENV['api-rest-req']['files'] = $_FILES;
                         break;
 
                     default:
                         $_ENV['api-rest-req']['body'] = require __DIR__ . '/Funcs/body-parce-form-data.php';
-                        $_ENV['api-rest-req']['files'] = $_FILES;
                         break;
                 }
-                if (req::getMethod() != 'POST')
-
                 break;
             default:
                 break;
         }
+
+        $_ENV['api-rest-req']['files'] = array_map(function($file){
+            return new FormDataFile(
+                $file['name'],
+                $file['type'],
+                $file['full_name'],
+                $file['tmp_name'],
+                $file['error'],
+                $file['size']
+            );
+        }, $_FILES);
+
     }
 
+    // Verificamos que le método solicitado a la URL exista
     if (array_key_exists(req::getMethod(), $route['methods'])){
         foreach ($route['methods'][req::getMethod()]['handlings'] as $hadling){
             $res = $hadling();

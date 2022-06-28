@@ -6,18 +6,23 @@
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
- * 
- * https://codigonaranja.com/como-cambiar-el-color-del-texto-en-aplicaciones-de-consola-de-php
  */
 namespace HNova\Rest;
 
 class log
 {
-    public static function error(){
+    public static function error($error){
 
     }
 
     public static function request(){
-        
+        $log = [
+            'url' => req::getURL(),
+            'method' => req::getMethod(),
+            'status' => 200,
+            'ip' => req::ip(),
+            'device' => req::device(),
+            'platform' => req::platform()
+        ];
     }
 }
