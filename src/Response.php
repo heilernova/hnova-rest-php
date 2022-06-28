@@ -55,7 +55,7 @@ class Response
                 if (!$body){
                     $this->status = 404;
                 }
-                $file = new SplFileInfo($body);
+                $file = new SplFileInfo($this->body);
                 $conten_type = "Content-Type: " . HttpFuns::getContentType($file->getExtension());
                 break;
 
