@@ -146,7 +146,7 @@ if ($route){
             return new FormDataFile(
                 $file['name'],
                 $file['type'],
-                $file['full_name'],
+                $file['full_name'] ?? '',
                 $file['tmp_name'],
                 $file['error'],
                 $file['size']
