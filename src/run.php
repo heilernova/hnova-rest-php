@@ -91,9 +91,18 @@ $url = "/" . trim($url, '/') . "/";
 foreach ($_ENV['api-rest-routes'] as $key => $value){
     $pattern = "/" . str_replace(':p', '(.+)', str_replace('/', '\/', "$key") ) . "/i";
     if (preg_match($pattern, $url) != false && substr_count($url, '/') == substr_count($key, '/')){
+        $route = $value;
+        break;
+    }
+}
 
-        // Caramos los parametros
-        $explode_path = explode('/', $value['path']);
+if ($route){
+    // Verificamos que el recurso soperte la Metodo HTTP
+    if (array_key_exists(req::getMethod(), $route['methods'])){
+
+        $route_active = $route['methods'][req::getMethod()];
+        // Cargamos los parametros de URL
+        $explode_path = explode('/', $route_active['path']);
         $explode_url  = explode('/', $url);
         $params_url = [];
         for ($i = 1; $i < count($explode_path); $i++){
@@ -104,59 +113,53 @@ foreach ($_ENV['api-rest-routes'] as $key => $value){
         }
 
         $_ENV['api-rest-req']['params'] = $params_url;
-        $route = $value;
-        break;
-    }
-}
+    
+        // Mapeamos los datos.
+        $_ENV['api-rest-req']['headers'] = apache_request_headers();
+        $content_type = $_ENV['api-rest-req']['headers']['Content-Type'] ?? null;
 
-if ($route){
-    // Mapeamos los datos.
-    $_ENV['api-rest-req']['headers'] = apache_request_headers();
-    $content_type = $_ENV['api-rest-req']['headers']['Content-Type'] ?? null;
+        if ($content_type){
+            $type = explode(';', $content_type)[0];
+            switch ($type){
+                # JSON
+                case "application/json":
+                    $_ENV['api-rest-req']['body'] = json_decode(file_get_contents('php://input'));
+                    break;
+                
+                # FormData
+                case "multipart/form-data":
+                    switch (req::getMethod()) {
+                        case 'GET':
+                            $_ENV['api-rest-req']['body'] = $_GET;
+                            break;
 
-    if ($content_type){
-        $type = explode(';', $content_type)[0];
-        switch ($type){
-            # JSON
-            case "application/json":
-                $_ENV['api-rest-req']['body'] = json_decode(file_get_contents('php://input'));
-                break;
-            
-            # FormData
-            case "multipart/form-data":
-                switch (req::getMethod()) {
-                    case 'GET':
-                        $_ENV['api-rest-req']['body'] = $_GET;
-                        break;
+                        case 'POST':
+                            $_ENV['api-rest-req']['body'] = $_POST;
+                            break;
 
-                    case 'POST':
-                        $_ENV['api-rest-req']['body'] = $_POST;
-                        break;
+                        default:
+                            $_ENV['api-rest-req']['body'] = require __DIR__ . '/Funcs/body-parce-form-data.php';
+                            break;
+                    }
+                    break;
+                default:
+                    break;
+            }
 
-                    default:
-                        $_ENV['api-rest-req']['body'] = require __DIR__ . '/Funcs/body-parce-form-data.php';
-                        break;
-                }
-                break;
-            default:
-                break;
+            $_ENV['api-rest-req']['files'] = array_map(function($file){
+                return new FormDataFile(
+                    $file['name'],
+                    $file['type'],
+                    $file['full_name'] ?? '',
+                    $file['tmp_name'],
+                    $file['error'],
+                    $file['size']
+                );
+            }, $_FILES);
+
         }
 
-        $_ENV['api-rest-req']['files'] = array_map(function($file){
-            return new FormDataFile(
-                $file['name'],
-                $file['type'],
-                $file['full_name'] ?? '',
-                $file['tmp_name'],
-                $file['error'],
-                $file['size']
-            );
-        }, $_FILES);
-
-    }
-
-    // Verificamos que le método solicitado a la URL exista
-    if (array_key_exists(req::getMethod(), $route['methods'])){
+        // Ejeciutamos las funcioens de loshalings
         foreach ($route['methods'][req::getMethod()]['handlings'] as $hadling){
             $res = $hadling();
             if ($res != null){
@@ -171,6 +174,9 @@ if ($route){
     }else{
         return new Response('text', "method not allowed", 405);
     }
+    
+    
+
 }else{
     return new Response('text', null, 404);
 }
