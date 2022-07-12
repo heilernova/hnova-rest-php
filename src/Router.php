@@ -22,7 +22,7 @@ class Router
 
         $path = "/" . trim($path, "/") . "/";
 
-        $path = $this->path . $path;
+        $path = rtrim( $this->path . $path , "//");
         // $path = trim()
         $patterns[] = "/(:\w+)/i";
         $replacements[] = ':p';
