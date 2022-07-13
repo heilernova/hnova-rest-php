@@ -162,7 +162,27 @@ if ($route){
         // Ejeciutamos las funcioens de los hadlings
         $res = null;
         foreach ($route['methods'][req::getMethod()]['handlings'] as $hadling){
-            $res = $hadling();
+
+            if (is_callable($hadling)){
+
+                $res = $hadling();
+
+            }else if (is_array($hadling)){
+
+                $namespace = $hadling[0] ?? null;
+                $fun_name = $hadling[1] ?? strtolower( req::getMethod() );
+                $class = new $namespace();
+
+                if ( is_null($namespace) ) throw new Exception("El nombre de la clase en el array no se ha espécificado" );
+
+                if ( method_exists($class, $fun_name) ){
+                    $res = $class->$fun_name();
+                }else{
+                    throw new Exception("La clase [ $namespace ] no contiene le método: $fun_name");
+                }
+
+            }
+
             if ( !is_null( $res ) ){
                 if ($res instanceof Response){
                     return $res;
