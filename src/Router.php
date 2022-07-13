@@ -18,12 +18,15 @@ class Router
         
     }
 
+    private function routerChildren(string $path, array $middlware = []):Router{
+        return new Router($this->path . "/$path", [...$this->middlware, ...$middlware]);
+    }
+
     private function add(string $method, string $path, ...$handlings){
 
         $path = "/" . trim($path, "/") . "/";
 
-        $path = rtrim( $this->path . $path , "//");
-        // $path = trim()
+        $path = str_replace( '//', '/', $this->path . $path );
         $patterns[] = "/(:\w+)/i";
         $replacements[] = ':p';
         $path_key = preg_replace($patterns, $replacements, $path);

@@ -13,6 +13,10 @@ use HNova\Rest\Response;
 
 class res
 {
+    public static function sendStatus(int $status):Response {
+        return new Response('text', status: $status);
+    }
+    
     public static function json($value):Response {
         return new Response('json', $value);
     }

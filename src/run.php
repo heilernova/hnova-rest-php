@@ -86,7 +86,7 @@ require __DIR__ . '/Funcs/load-cors.php';
  * Cargamos Rutas
  */
 $route = null;
-$url = "/" . trim($url, '/') . "/";
+$url = str_replace( '//', '/', "/" . trim($url, '/') . "/");
 
 foreach ($_ENV['api-rest-routes'] as $key => $value){
     $pattern = "/" . str_replace(':p', '(.+)', str_replace('/', '\/', "$key") ) . "/i";
@@ -159,24 +159,26 @@ if ($route){
 
         }
 
-        // Ejeciutamos las funcioens de loshalings
+        // Ejeciutamos las funcioens de los hadlings
+        $res = null;
         foreach ($route['methods'][req::getMethod()]['handlings'] as $hadling){
             $res = $hadling();
-            if ($res != null){
+            if ( !is_null( $res ) ){
                 if ($res instanceof Response){
                     return $res;
                 }else{
+
+                    
                     return new Response('json', $res);
                 }
                 break;
             }
         }
+        return new Response('text', $res, 500);
     }else{
         return new Response('text', "method not allowed", 405);
     }
-    
-    
 
 }else{
-    return new Response('text', null, 404);
+    return new Response('text', 'not found', 404);
 }

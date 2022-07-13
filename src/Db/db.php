@@ -19,6 +19,32 @@ class db
 {
     private static PDOStatement|null $stmt = null;
     private static string $last_query = "";
+    private static bool $_autoCommit = true;
+
+    public static function connect(array $data):bool{
+        try {
+            $type = $data['type'];
+            $hostname = $data['hostname'];
+            $username = $data['username'];
+            $password = $data['password'];
+            $database = $data['database'];
+
+            $pdo = new PDO("$type:host=$hostname; dbname=$database", $username, $password);
+            $_ENV['api-rest-db']['type'] = $type;
+            $_ENV['api-rest-db']['pdo'] = $pdo;
+            $_ENV['api-rest-db']['char'] = $type == 'mysql' ? '`' : ($type == 'pgsql' ? '"' : '');
+
+            return true;
+        } catch (\Throwable $th) {
+            //throw $th;
+            // self::$error = $th->getMessage();
+            return false;
+        }
+    }
+
+    private static function autoCommit(bool $value):void{
+        self::$_autoCommit = $value;
+    }
 
     private static function getPDO():PDO{
         $config = $_ENV['api-rest-db']['pdo'] ?? null; 
@@ -34,6 +60,11 @@ class db
 
     private static function execute(string $sql, array $params = null):DbResult {
         try {
+            
+            if ( !self::$_autoCommit ){
+                self::getPDO()->beginTransaction();
+            }
+
             if (!self::$stmt){
                 self::$stmt = self::getPDO()->prepare($sql);
                 self::$last_query = $sql;
@@ -58,7 +89,12 @@ class db
                 return $res;
             }
         } catch (\Throwable $th) {
-            throw $th;
+            $ex = new Exception(
+                $th->getMessage() . "\n\nSQL: " . $sql,
+                $th->getCode(),
+                $th->getPrevious()
+            );
+            throw $ex;
         }
     }
 
