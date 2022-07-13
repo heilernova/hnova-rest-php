@@ -18,7 +18,7 @@ class Router
         
     }
 
-    private function routerChildren(string $path, array $middlware = []):Router{
+    public function routerChildren(string $path, array $middlware = []):Router{
         return new Router($this->path . "/$path", [...$this->middlware, ...$middlware]);
     }
 
