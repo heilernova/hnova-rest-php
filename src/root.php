@@ -7,4 +7,11 @@ class root{
         echo json_encode($value);
         exit;
     }
+
+    /**
+     * @return object|callable
+     */
+    public static function getRoutes():array{
+        return $_ENV['api-rest-routes'];
+    }
 }

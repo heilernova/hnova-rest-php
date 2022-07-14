@@ -36,7 +36,7 @@ class req
      * @param string[]|object
      */
     public static function params(bool $assoc = false):array|object {
-        return $assoc ? $_ENV['api-rest-req']['params'] : (object)$_ENV['api-rest-req']['params'];
+        return $assoc ? ($_ENV['api-rest-req']['params'] ?? []) : (object)($_ENV['api-rest-req']['params'] ?? []);
     }
 
     public static function device():int{
