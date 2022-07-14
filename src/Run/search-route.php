@@ -5,12 +5,26 @@ use HNova\Rest\req;
 use HNova\Rest\res;
 use HNova\Rest\Response;
 use HNova\Rest\root;
+use JetBrains\PhpStorm\Internal\ReturnTypeContract;
 
 $url = "/" . req::getURL() . "/";
 $url = str_replace('//', '/', $url);
 $route = null;
 
-function searh_url(string $url):?array{
+function searh_url(string $url):array | Response | null {
+
+    // Ejecutamos los middleware
+    foreach ($_ENV['api-rest-middleware'] ?? [] as $middleware){
+        $result = $middleware();
+        if ( !is_null($result)){
+            if ($result instanceof Response ){
+                return $result;
+            }
+            return res::json( $result );
+        }
+    }
+
+    $_ENV['api-rest-middleware'] = [];
 
     foreach ( ( $_ENV['api-rest-routes'] ?? [] )  as $key => $value ){
         // Establecemos la expreción regular
@@ -50,6 +64,9 @@ function searh_url(string $url):?array{
 }
 
 $route = searh_url( $url, $_ENV['api-rest-routes'] ?? [] );
+
+if ($route instanceof Response) return $route;
+
 if ($route){
 
     if (array_key_exists(req::getMethod(), $route['methods'])){
