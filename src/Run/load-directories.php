@@ -7,3 +7,6 @@ foreach (get_required_files() as $path){
         break;
     }
 }
+
+// Cargamos app.json
+$_ENV['api-rest-config'] = json_decode( file_get_contents($_ENV['api-rest-dir'] . "/app.json") , true);

@@ -32,12 +32,13 @@ class api
             $error .= "File: " . $th->getFile() . "\n";
 
             $res = new Response('text', $error, 500);
+            $res->send();
         }
         exit;
     }
 
-    public static function getConfig():object{
-        return (object)[];
+    public static function getConfig():ApiConfig{
+        return new ApiConfig();
     }
 
     public static function setDirFiles(string $dir):void {
