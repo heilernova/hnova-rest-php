@@ -76,7 +76,7 @@ class router
         self::addRoute('DELETE', $path, ...$handlings);
     }
 
-    public static function pacth(string $path, array|callable ...$handlings){
-        self::addRoute('PACHT', $path, ...$handlings);
+    public static function patch(string $path, array|callable ...$handlings){
+        self::addRoute('PATCH', $path, ...$handlings);
     }
 }
