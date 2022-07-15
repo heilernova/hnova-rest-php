@@ -56,8 +56,7 @@ try{
                     header("Access-Control-Allow-Headers:        {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
                 }
             }
-            http_response_code(500);
-            echo "Error cors";
+
             exit(0);
         }
     }
