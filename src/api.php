@@ -66,7 +66,7 @@ class api
             }
         }else if ( count( $arg ) == 1 ){
             if ( is_callable( $arg[0] ) ){
-                $_ENV['api-rest-middleware'][] = $arg[0];
+                $_ENV['api-rest-routes'][] = $arg[0];
             }
         }
     }

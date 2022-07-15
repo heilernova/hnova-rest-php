@@ -4,8 +4,6 @@ use HNova\Rest\Funcs\FuncsURL;
 use HNova\Rest\req;
 use HNova\Rest\res;
 use HNova\Rest\Response;
-use HNova\Rest\root;
-use JetBrains\PhpStorm\Internal\ReturnTypeContract;
 
 $url = "/" . req::getURL() . "/";
 $url = str_replace('//', '/', $url);
@@ -13,51 +11,54 @@ $route = null;
 
 function searh_url(string $url):array | Response | null {
 
-    // Ejecutamos los middleware
-    foreach ($_ENV['api-rest-middleware'] ?? [] as $middleware){
-        $result = $middleware();
-        if ( !is_null($result)){
-            if ($result instanceof Response ){
-                return $result;
-            }
-            return res::json( $result );
-        }
-    }
-
-    $_ENV['api-rest-middleware'] = [];
 
     foreach ( ( $_ENV['api-rest-routes'] ?? [] )  as $key => $value ){
-        // Establecemos la expreción regular
-        $pattern = "/" . str_replace(':p', '(.+)', str_replace('/', '\/', "$key") ) . "/i";
-        $pre = preg_match($pattern, $url);
-        if ($pre != false){
 
-            if ($value['type'] == 'router' ){
+        if ( is_numeric( $key ) ){
 
-                $_ENV['api-rest-routes'] = [];
-                $value['load']();
-
-                $num_delete = substr_count( $value['url'] , '/');
-
-                $explode_url = explode('/', $url);
-
-                $url_new = "";
-                for ($i = $num_delete ; $i < count($explode_url) - 1 ; $i++ ){
-                    $url_new .= "/" . trim( $explode_url[$i] ?? '' );
+            // Ejecutamos el middleware
+            $result = $value();
+            if ( !is_null($result)){
+                if ($result instanceof Response ){
+                    return $result;
                 }
-                $url_new .= "/";
+                return res::json( $result );
+            }
 
-                // Obtenemos los parametros
-                $_ENV['api-rest-req']['url-format'] =  $_ENV['api-rest-req']['url-format'] . ltrim( $value['url'], '/');
+        }else{
+            // Establecemos la expreción regular
+            $pattern = "/" . str_replace(':p', '(.+)', str_replace('/', '\/', "$key") ) . "/i";
+            $pre = preg_match($pattern, $url);
+            if ($pre != false){
 
-                return searh_url($url_new);
-            }else if ($value['type'] == 'route'){
-                if (substr_count($url, '/') == substr_count($key, '/')){
-                    return $value;
+                if ($value['type'] == 'router' ){
+
+                    $_ENV['api-rest-routes'] = [];
+                    $value['load']();
+
+                    $num_delete = substr_count( $value['url'] , '/');
+
+                    $explode_url = explode('/', $url);
+
+                    $url_new = "";
+                    for ($i = $num_delete ; $i < count($explode_url) - 1 ; $i++ ){
+                        $url_new .= "/" . trim( $explode_url[$i] ?? '' );
+                    }
+                    $url_new .= "/";
+
+                    // Obtenemos los parametros
+                    $_ENV['api-rest-req']['url-format'] =  $_ENV['api-rest-req']['url-format'] . ltrim( $value['url'], '/');
+
+                    return searh_url($url_new);
+                }else if ($value['type'] == 'route'){
+                    if (substr_count($url, '/') == substr_count($key, '/')){
+                        return $value;
+                    }
+
                 }
-
             }
         }
+       
     
     }
     return null;
@@ -96,17 +97,6 @@ if ($route){
                 }
             }
 
-        }
-
-        // Ejecutamos los middleware
-        foreach ($_ENV['api-rest-middleware'] ?? [] as $middleware){
-            $result = $middleware();
-            if ( !is_null($result)){
-                if ($result instanceof Response ){
-                    return $result;
-                }
-                return res::json( $result );
-            }
         }
 
         foreach ($method['handlings'] as $handling){
