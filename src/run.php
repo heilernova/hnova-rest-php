@@ -16,7 +16,13 @@ use HNova\Rest\root;
 
 $_ENV['api-rest-route'] = [];
 
+$url = $_SERVER['REQUEST_URI'];
+$path_script = dirname($_SERVER['SCRIPT_NAME']);
+$uri = substr($url, strlen($path_script));
+$_ENV['api-rest-req']['url'] = trim($uri, "/");
+
 require __DIR__ . '/Run/load-directories.php';
+require __DIR__ . '/Run/load-cors.php';
 require __DIR__ . '/Run/load-req-info.php';
 
 return require __DIR__ . '/Run/search-route.php';
