@@ -4,13 +4,13 @@ use HNova\Rest\Funcs\FuncsURL;
 use HNova\Rest\req;
 use HNova\Rest\res;
 use HNova\Rest\Response;
+use HNova\Rest\root;
 
 $url = "/" . req::getURL() . "/";
 $url = str_replace('//', '/', $url);
 $route = null;
 
 function searh_url(string $url):array | Response | null {
-
 
     foreach ( ( $_ENV['api-rest-routes'] ?? [] )  as $key => $value ){
 
@@ -29,7 +29,9 @@ function searh_url(string $url):array | Response | null {
             // Establecemos la expreción regular
             $pattern = "/" . str_replace(':p', '(.+)', str_replace('/', '\/', "$key") ) . "/i";
             $pre = preg_match($pattern, $url);
-            if ($pre != false){
+
+            if ($pre != false || $key == '//'){
+
 
                 if ($value['type'] == 'router' ){
 
@@ -41,16 +43,26 @@ function searh_url(string $url):array | Response | null {
                     $explode_url = explode('/', $url);
 
                     $url_new = "";
-                    for ($i = $num_delete ; $i < count($explode_url) - 1 ; $i++ ){
-                        $url_new .= "/" . trim( $explode_url[$i] ?? '' );
+                    if ( is_int( $pre ) && $key != '//' ){
+
+                        for ($i = $num_delete ; $i < count($explode_url) - 1 ; $i++ ){
+                            $url_new .= "/" . trim( $explode_url[$i] ?? '' );
+                        }
+                        $url_new .= "/";
+                    
+                    }else{
+
+                        $url_new = $url;
+ 
                     }
-                    $url_new .= "/";
 
                     // Obtenemos los parametros
                     $_ENV['api-rest-req']['url-format'] =  $_ENV['api-rest-req']['url-format'] . ltrim( $value['url'], '/');
 
                     return searh_url($url_new);
                 }else if ($value['type'] == 'route'){
+                    // echo substr_count($url, '/') == substr_count($key, '/') ? "Si " : "No ";
+                    // echo $key;
                     if (substr_count($url, '/') == substr_count($key, '/')){
                         return $value;
                     }
