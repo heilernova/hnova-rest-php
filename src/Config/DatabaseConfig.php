@@ -12,7 +12,7 @@ class DatabaseConfig
         if (is_null($config)) throw new Exception("No hay configuración de la base de datos [ $name ] en el app.json");
 
         try {
-            $dns = $config['type'] . ":host" . $config['hostname'] . "; dbname" . $config['database']; 
+            $dns = $config['type'] . ":host=" . $config['hostname'] . "; dbname=" . $config['database']; 
             return new PDO($dns, $config['username'], $config['password']);
         } catch (\Throwable $th) {
             throw $th;
