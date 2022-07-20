@@ -69,6 +69,8 @@ class Response
 
         header($conten_type);
         echo $body;
+        $_ENV['api-rest-res']['status'] = $this->status;
         http_response_code($this->status);
+        log::request();
     }
 }
